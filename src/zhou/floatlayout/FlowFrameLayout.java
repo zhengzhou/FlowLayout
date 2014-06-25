@@ -39,11 +39,6 @@ public class FlowFrameLayout extends FrameLayout {
 
     private int[] mStyleable = { android.R.attr.horizontalSpacing, android.R.attr.verticalSpacing };
 
-    public FlowFrameLayout(Context context) {
-        super(context);
-        // TODO Auto-generated constructor stub
-    }
-
     public FlowFrameLayout(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
@@ -52,7 +47,7 @@ public class FlowFrameLayout extends FrameLayout {
         super(context, attrs, defStyle);
         TypedArray a = context.obtainStyledAttributes(attrs, mStyleable);
         mHorSpace = a.getDimensionPixelSize(0, mDefaultDividerSize);
-        mVerSpace = a.getDimensionPixelSize(0, mDefaultDividerSize);
+        mVerSpace = a.getDimensionPixelSize(1, mDefaultDividerSize);
         a.recycle();
     }
 
@@ -65,9 +60,13 @@ public class FlowFrameLayout extends FrameLayout {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);
         int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+        int layoutHeight = 0;
+
         if (getChildCount() > 0 && !onMeasured) {
             reset();
             int someChildWidth = 0;
+            int maxChildheight = 0;
             final int childCount = getChildCount();
             measureChildren(widthMeasureSpec, heightMeasureSpec);
             for (int i = 0; i < childCount; i++) {
@@ -77,6 +76,9 @@ public class FlowFrameLayout extends FrameLayout {
                 Logger.dd("child width:%d,index:%d ", childWidth, i);
                 someChildWidth += childWidth;
                 int divider = mHorSpace;
+
+                maxChildheight = Math.max(child.getMeasuredHeight(), maxChildheight);
+
                 if (someChildWidth < widthSize) {
                     oneRow.offer(child);
                     Logger.dd("push child");
@@ -85,7 +87,6 @@ public class FlowFrameLayout extends FrameLayout {
                     i--;
                     someChildWidth -= childWidth;
                     // 记录间隔宽度,避免多次onMeasure
-                    final int rows = oneRow.size();
                     if (oneRow.size() > 0) {
                         divider = (widthSize - someChildWidth) / (oneRow.size());
                     } else {
@@ -100,6 +101,8 @@ public class FlowFrameLayout extends FrameLayout {
                         dividerRow.offer(divider + oneRow.poll().getMeasuredWidth());
                         // dividerRow.offer(divider + oneRow.pop().getMeasuredWidth());
                     }
+                    layoutHeight += maxChildheight;
+                    maxChildheight = 0;
                     someChildWidth = 0;
                 }
             }
@@ -122,6 +125,9 @@ public class FlowFrameLayout extends FrameLayout {
             }
             measureChildren(widthMeasureSpec, heightMeasureSpec);
         }
+        if (heightMode == MeasureSpec.UNSPECIFIED) {
+            heightSize = layoutHeight;
+        }
         setMeasuredDimension(widthSize, heightSize);
         // super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
@@ -136,7 +142,7 @@ public class FlowFrameLayout extends FrameLayout {
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        layoutChild(left / 2, top / 2, right, bottom);
+        layoutChild(left, getPaddingTop(), right, bottom);
     }
 
     private void layoutChild(final int l, final int t, final int r, final int b) {
@@ -289,6 +295,10 @@ public class FlowFrameLayout extends FrameLayout {
             lp = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         }
         addViewInLayout(view, index, lp, true);
+    }
+
+    public void setupChild(final View view) {
+        setupChild(view, getChildCount());
     }
 
     void reLayoutParam(View view) {
