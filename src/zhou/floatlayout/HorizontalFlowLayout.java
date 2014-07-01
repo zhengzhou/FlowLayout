@@ -17,6 +17,7 @@ import android.widget.ListAdapter;
  * @author zhou
  *
  */
+@Deprecated
 public class HorizontalFlowLayout extends AdapterView<ListAdapter> {
 
     // 子项目之间的间距

@@ -54,16 +54,23 @@ public class FlowFrameLayout extends FrameLayout {
     Queue<View> oneRow = new LinkedList<View>();
     LinkedList<Integer> dividerRow = new LinkedList<Integer>();
     boolean onMeasured = false;
-    private IntBitSet newLine = new IntBitSet(0x000000000000000);
+    private IntBitSet mNewLineFlag = new IntBitSet(0x000000000000000);
+    // 佈局的行數
+    int lines = 0;
+    // 佈局中項目個數
+    int maxLines = -1;
+    int size = 0;
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);
         int heightSize = MeasureSpec.getSize(heightMeasureSpec);
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        int layoutHeight = 0;
-
+        Logger.ii("onMeasure widthSize:%d,heightSize:%d", widthSize, heightSize);
         if (getChildCount() > 0 && !onMeasured) {
+            int layoutHeight = 0;
+            lines = 1;
+            size = 0;
             reset();
             int someChildWidth = 0;
             int maxChildheight = 0;
@@ -73,46 +80,55 @@ public class FlowFrameLayout extends FrameLayout {
                 View child = getChildAt(i);
 
                 int childWidth = child.getMeasuredWidth() + mHorSpace;
-                Logger.dd("child width:%d,index:%d ", childWidth, i);
                 someChildWidth += childWidth;
                 int divider = mHorSpace;
 
-                maxChildheight = Math.max(child.getMeasuredHeight(), maxChildheight);
+                maxChildheight = Math.max(child.getMeasuredHeight() + mVerSpace, maxChildheight);
 
                 if (someChildWidth < widthSize) {
                     oneRow.offer(child);
-                    Logger.dd("push child");
+                    Logger.dd("push child child width:%d,index:%d", childWidth, i);
                 } else {
-                    newLine.set(i);
-                    i--;
-                    someChildWidth -= childWidth;
+                    mNewLineFlag.set(i);
+                    lines++;
+                    i--; // import 向后进一步!
+                    someChildWidth -= childWidth + mHorSpace;
                     // 记录间隔宽度,避免多次onMeasure
-                    if (oneRow.size() > 0) {
-                        divider = (widthSize - someChildWidth) / (oneRow.size());
+                    if (oneRow.size() > 1) {
+                        divider = (widthSize - someChildWidth) / oneRow.size();
                     } else {
                         divider = (widthSize - someChildWidth);
                     }
-                    Logger.dd("child width:%d, someChildWidth:%d", childWidth, someChildWidth);
-                    int j = i - oneRow.size();
+                    Logger.dd("index:%d child width:%d, divider:%d", i, divider, someChildWidth);
 
                     while (!oneRow.isEmpty()) {// 清空
-                        Logger.dd("pop child j:%d", j);
                         Logger.dd("offer item");
                         dividerRow.offer(divider + oneRow.poll().getMeasuredWidth());
-                        // dividerRow.offer(divider + oneRow.pop().getMeasuredWidth());
                     }
                     layoutHeight += maxChildheight;
                     maxChildheight = 0;
                     someChildWidth = 0;
+                    if (maxLines > 0 && lines > maxLines) {
+                        // 超出设定的最大行数，后面的就不计算了
+                        size = i + 1;
+                        Logger.ii("over maxLines,views size:%d  lines :%d", size, lines);
+                        break;
+                    }
                 }
             }
+            if (maxLines > 0 && lines > maxLines && size < (getChildCount() - 1)) {
+                Logger.ii("over maxLines,views max size:%d  childCount :%d", size, getChildCount());
+                removeViewsInLayout(size, getChildCount() - size);
+            } else {
+                size = getChildCount();
+            }
+            layoutHeight += maxChildheight;
             while (!oneRow.isEmpty()) {// 清空
-                Logger.dd("pop child");
-                Logger.dd("offer item");
+                Logger.dd("pop child, offer item");
                 dividerRow.offer(oneRow.poll().getMeasuredWidth());
             }
             Logger.dd(Arrays.toString(dividerRow.toArray()));
-            for (int i = 0; i < childCount; i++) {
+            for (int i = 0; i < size; i++) {
                 View child = getChildAt(i);
                 ViewGroup.LayoutParams lp = child.getLayoutParams();
                 int width = child.getMeasuredWidth();
@@ -124,9 +140,9 @@ public class FlowFrameLayout extends FrameLayout {
                 }
             }
             measureChildren(widthMeasureSpec, heightMeasureSpec);
-        }
         if (heightMode == MeasureSpec.UNSPECIFIED) {
             heightSize = layoutHeight;
+        }
         }
         setMeasuredDimension(widthSize, heightSize);
         // super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -136,24 +152,24 @@ public class FlowFrameLayout extends FrameLayout {
     private void reset() {
         dividerRow.clear();
         oneRow.clear();
-        newLine.clean();
+        mNewLineFlag.clean();
         onMeasured = true;
     }
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        layoutChild(left, getPaddingTop(), right, bottom);
+        layoutChild(0, getPaddingTop(), right, bottom);
     }
 
     private void layoutChild(final int l, final int t, final int r, final int b) {
-        // int layoutRight = getRight();
         int cL = l, cT = t, cB = 0;
         final int count = getChildCount();
+        // mNewLineFlag.getValue()
+        Logger.ww("flags:%s", Integer.toBinaryString(mNewLineFlag.getValue()));
         for (int i = 0; i < count; i++) {
             View view = getChildAt(i);
-            // view.getLayoutParams().width = widthMargin;
             Logger.dd("cl:%d,cT:%d,cB:%d,view width:%d", cL, cT, cB, view.getMeasuredWidth());
-            if (!newLine.get(i)) {
+            if (!mNewLineFlag.get(i)) {
                 view.layout(cL, cT, cL + view.getMeasuredWidth(), cT + view.getMeasuredHeight());
                 cL += view.getMeasuredWidth() + mHorSpace;
                 cB = Math.max(cB, cT + view.getMeasuredHeight());
@@ -190,6 +206,7 @@ public class FlowFrameLayout extends FrameLayout {
             mAdapter.unregisterDataSetObserver(observer);
         }
         if (mAdapter == null || mAdapter != adapter) {
+            size = adapter.getCount();
             for (int pos = 0; pos < adapter.getCount(); pos++) {
                 View childView = adapter.getView(pos, null, null);
                 setupChild(childView, pos);
@@ -205,9 +222,8 @@ public class FlowFrameLayout extends FrameLayout {
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_CENTER:
             case KeyEvent.KEYCODE_ENTER:
-                if (!isEnabled()) {
+                if (!isEnabled())
                     return true;
-                }
                 if (isClickable() && isPressed() && mSelectedPosition >= 0 && mAdapter != null
                     && mSelectedPosition < mAdapter.getCount()) {
 
@@ -263,6 +279,25 @@ public class FlowFrameLayout extends FrameLayout {
         return handled;
     }
 
+    /**
+     * 获取当前的行数
+     */
+    public int getLines() {
+        return lines;
+    }
+
+    /** 设置最大允许行数 */
+    public void setMaxLines(int maxLines) {
+        this.maxLines = maxLines;
+    }
+
+    /**
+     * 是否刪除最後一行
+     */
+    public void setCutEnd() {
+
+    }
+
     private void clearPress() {
         for (int i = 0; i < getChildCount(); i++) {
             getChildAt(i).setPressed(false);
@@ -281,11 +316,10 @@ public class FlowFrameLayout extends FrameLayout {
             final View child = getChildAt(i);
             if (child.getVisibility() == View.VISIBLE) {
                 child.getHitRect(frame);
-                if (frame.contains(x, y)) {
+                if (frame.contains(x, y))
                     return mFirstPosition + i;
                 }
             }
-        }
         return -1;
     }
 
