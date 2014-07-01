@@ -18,7 +18,6 @@ See the code:
             for (int i = 0; i < 20; i++) {
                 int len = r.nextInt(10);
                 String s = generateString(r, characters, len);
-                System.out.println(s);
                 s = s + " " + i + " ";
                 TextView text = new TextView(getActivity());
                 text.setText(s);
@@ -26,14 +25,16 @@ See the code:
                 text.setBackgroundColor(Color.DKGRAY);
                 flowLayout.setupChild(text, i);
             }
-            flowLayout.requestLayout(); ```
+            flowLayout.requestLayout(); 
+```
             
-            ##or use:
+ ##or use:
 ```java
    mFlowLayout = (FlowFrameLayout) findViewById(R.id.flow_list);
    mFlowLayout.setMaxLines(4);
    mFlowLayout.setOnItemClickListener(this);
-   mFlowLayout.setAdapter(myAdapter); ```
+   mFlowLayout.setAdapter(myAdapter); 
+```
    
 
 
