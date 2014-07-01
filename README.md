@@ -10,7 +10,9 @@ a flowlayout which can be place one by one .
 
 ![Screen](/S40528-092812.jpg)
 
-See the code:
+*** 
+
+### add view by code:
 
 ```java
             FlowFrameLayout flowLayout = (FlowFrameLayout) root.findViewById(R.id.flow_layout);
@@ -28,7 +30,7 @@ See the code:
             flowLayout.requestLayout(); 
 ```
             
- ##or use:
+### or use code:
 ```java
    mFlowLayout = (FlowFrameLayout) findViewById(R.id.flow_list);
    mFlowLayout.setMaxLines(4);
