@@ -20,8 +20,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.FrameLayout;
 import android.widget.ListAdapter;
 
-import com.yiutil.tools.Logger;
-
 /**
  * 一个水平展开的布局,类似瀑布流
  * */
