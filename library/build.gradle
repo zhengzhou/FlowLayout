@@ -1,5 +1,11 @@
 apply plugin: 'com.android.library'
-group='party.zayn'
+
+ext {
+    PUBLISH_GROUP_ID = 'com.github.zhengzhou.flowlayout'
+    PUBLISH_ARTIFACT_ID = 'flowlayout'
+    PUBLISH_VERSION = '1.1'
+}
+
 
 android {
     compileSdkVersion 24
@@ -18,3 +24,5 @@ android {
 dependencies {
 
 }
+
+apply from: 'https://raw.githubusercontent.com/ArthurHub/release-android-library/master/android-release-aar.gradle'

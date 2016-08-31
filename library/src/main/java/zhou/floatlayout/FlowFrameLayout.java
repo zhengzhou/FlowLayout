@@ -1,9 +1,5 @@
 package zhou.floatlayout;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Queue;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.database.DataSetObserver;
@@ -20,9 +16,12 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.FrameLayout;
 import android.widget.ListAdapter;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 /**
  * 一个水平展开的布局,类似瀑布流
- * */
+ */
 public class FlowFrameLayout extends FrameLayout {
 
     private OnItemClickListener mListener;
@@ -35,7 +34,7 @@ public class FlowFrameLayout extends FrameLayout {
     private int mHorSpace;
     private int mVerSpace;
 
-    private int[] mStyleable = { android.R.attr.horizontalSpacing, android.R.attr.verticalSpacing };
+    private int[] mStyleable = {android.R.attr.horizontalSpacing, android.R.attr.verticalSpacing};
 
     public FlowFrameLayout(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
@@ -79,7 +78,7 @@ public class FlowFrameLayout extends FrameLayout {
 
                 int childWidth = child.getMeasuredWidth() + mHorSpace;
                 someChildWidth += childWidth;
-                int divider = mHorSpace;
+
 
                 maxChildheight = Math.max(child.getMeasuredHeight() + mVerSpace, maxChildheight);
 
@@ -87,6 +86,7 @@ public class FlowFrameLayout extends FrameLayout {
                     oneRow.offer(child);
 
                 } else {
+                    int divider;
                     mNewLineFlag.set(i);
                     lines++;
                     i--; // import 向后进一步!
@@ -121,25 +121,26 @@ public class FlowFrameLayout extends FrameLayout {
             }
             for (int i = 0; i < size; i++) {
                 View child = getChildAt(i);
-                ViewGroup.LayoutParams lp = child.getLayoutParams();
-                int width = child.getMeasuredWidth();
+                ViewGroup.LayoutParams lp;
+                child.getLayoutParams();
 
                 if (dividerRow.peek() != null) {
-                    width = dividerRow.poll();
+                    int width = dividerRow.poll();
                     lp = new LayoutParams(width, LayoutParams.WRAP_CONTENT);
                     child.setLayoutParams(lp);
                 }
             }
             measureChildren(widthMeasureSpec, heightMeasureSpec);
-        if (heightMode == MeasureSpec.UNSPECIFIED) {
-            heightSize = layoutHeight;
-        }
+            if (heightMode == MeasureSpec.UNSPECIFIED) {
+                heightSize = layoutHeight;
+            }
         }
         setMeasuredDimension(widthSize, heightSize);
-        // super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
-    /** 复位状态.重新进行一次测算是需要 */
+    /**
+     * 复位状态.重新进行一次测算是需要
+     */
     private void reset() {
         dividerRow.clear();
         oneRow.clear();
@@ -214,7 +215,7 @@ public class FlowFrameLayout extends FrameLayout {
                 if (!isEnabled())
                     return true;
                 if (isClickable() && isPressed() && mSelectedPosition >= 0 && mAdapter != null
-                    && mSelectedPosition < mAdapter.getCount()) {
+                        && mSelectedPosition < mAdapter.getCount()) {
 
                     final View view = getChildAt(mSelectedPosition - mFirstPosition);
                     if (view != null) {
@@ -274,7 +275,9 @@ public class FlowFrameLayout extends FrameLayout {
         return lines;
     }
 
-    /** 设置最大允许行数 */
+    /**
+     * 设置最大允许行数
+     */
     public void setMaxLines(int maxLines) {
         this.maxLines = maxLines;
     }
@@ -303,8 +306,8 @@ public class FlowFrameLayout extends FrameLayout {
                 child.getHitRect(frame);
                 if (frame.contains(x, y))
                     return mFirstPosition + i;
-                }
             }
+        }
         return -1;
     }
 
@@ -329,7 +332,6 @@ public class FlowFrameLayout extends FrameLayout {
      * 负责响应 数据集变化
      *
      * @author zhou
-     *
      */
     public class FlowObserver extends DataSetObserver {
 
