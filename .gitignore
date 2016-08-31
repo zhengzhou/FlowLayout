@@ -94,7 +94,6 @@ fabric.properties
 *.class
 
 .svn/
-gradle/
 
 ModuleApi-release/
 signing.properties

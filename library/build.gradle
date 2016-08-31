@@ -1,5 +1,5 @@
 apply plugin: 'com.android.library'
-
+apply plugin: 'maven'
 ext {
     PUBLISH_GROUP_ID = 'com.github.zhengzhou.flowlayout'
     PUBLISH_ARTIFACT_ID = 'flowlayout'
@@ -25,4 +25,4 @@ dependencies {
 
 }
 
-apply from: 'https://raw.githubusercontent.com/ArthurHub/release-android-library/master/android-release-aar.gradle'
+//apply from: 'https://raw.githubusercontent.com/ArthurHub/release-android-library/master/android-release-aar.gradle'
