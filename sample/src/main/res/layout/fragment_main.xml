@@ -6,11 +6,12 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="zhou.floatlayout.MainActivity$PlaceholderFragment" >
+    android:background="@android:color/background_light"
+    tools:context=".MainActivity$PlaceholderFragment" >
 
     <zhou.floatlayout.FlowFrameLayout
         android:id="@+id/flow_layout"
-        android:background="@color/abs__background_holo_light"
+
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:horizontalSpacing="15dp"

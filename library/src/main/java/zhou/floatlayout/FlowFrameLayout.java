@@ -64,7 +64,7 @@ public class FlowFrameLayout extends FrameLayout {
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);
         int heightSize = MeasureSpec.getSize(heightMeasureSpec);
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        Logger.ii("onMeasure widthSize:%d,heightSize:%d", widthSize, heightSize);
+
         if (getChildCount() > 0 && !onMeasured) {
             int layoutHeight = 0;
             lines = 1;
@@ -85,7 +85,7 @@ public class FlowFrameLayout extends FrameLayout {
 
                 if (someChildWidth < widthSize) {
                     oneRow.offer(child);
-                    Logger.dd("push child child width:%d,index:%d", childWidth, i);
+
                 } else {
                     mNewLineFlag.set(i);
                     lines++;
@@ -97,10 +97,7 @@ public class FlowFrameLayout extends FrameLayout {
                     } else {
                         divider = (widthSize - someChildWidth);
                     }
-                    Logger.dd("index:%d child width:%d, divider:%d", i, divider, someChildWidth);
-
                     while (!oneRow.isEmpty()) {// 清空
-                        Logger.dd("offer item");
                         dividerRow.offer(divider + oneRow.poll().getMeasuredWidth());
                     }
                     layoutHeight += maxChildheight;
@@ -109,23 +106,19 @@ public class FlowFrameLayout extends FrameLayout {
                     if (maxLines > 0 && lines > maxLines) {
                         // 超出设定的最大行数，后面的就不计算了
                         size = i + 1;
-                        Logger.ii("over maxLines,views size:%d  lines :%d", size, lines);
                         break;
                     }
                 }
             }
             if (maxLines > 0 && lines > maxLines && size < (getChildCount() - 1)) {
-                Logger.ii("over maxLines,views max size:%d  childCount :%d", size, getChildCount());
                 removeViewsInLayout(size, getChildCount() - size);
             } else {
                 size = getChildCount();
             }
             layoutHeight += maxChildheight;
             while (!oneRow.isEmpty()) {// 清空
-                Logger.dd("pop child, offer item");
                 dividerRow.offer(oneRow.poll().getMeasuredWidth());
             }
-            Logger.dd(Arrays.toString(dividerRow.toArray()));
             for (int i = 0; i < size; i++) {
                 View child = getChildAt(i);
                 ViewGroup.LayoutParams lp = child.getLayoutParams();
@@ -163,10 +156,8 @@ public class FlowFrameLayout extends FrameLayout {
         int cL = l, cT = t, cB = 0;
         final int count = getChildCount();
         // mNewLineFlag.getValue()
-        Logger.ww("flags:%s", Integer.toBinaryString(mNewLineFlag.getValue()));
         for (int i = 0; i < count; i++) {
             View view = getChildAt(i);
-            Logger.dd("cl:%d,cT:%d,cB:%d,view width:%d", cL, cT, cB, view.getMeasuredWidth());
             if (!mNewLineFlag.get(i)) {
                 view.layout(cL, cT, cL + view.getMeasuredWidth(), cT + view.getMeasuredHeight());
                 cL += view.getMeasuredWidth() + mHorSpace;
@@ -270,7 +261,6 @@ public class FlowFrameLayout extends FrameLayout {
                 break;
             case MotionEvent.ACTION_CANCEL:
                 clearPress();
-                Logger.d();
                 handled = true;
                 break;
         }
@@ -303,11 +293,8 @@ public class FlowFrameLayout extends FrameLayout {
     }
 
     public int pointToPosition(int x, int y) {
-        Rect frame = null;
-        if (frame == null) {
-            Rect mTouchFrame = new Rect();
-            frame = mTouchFrame;
-        }
+        Rect mTouchFrame = new Rect();
+        Rect frame = mTouchFrame;
 
         final int count = getChildCount();
         for (int i = count - 1; i >= 0; i--) {
